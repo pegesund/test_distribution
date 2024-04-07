@@ -132,17 +132,17 @@ end
     List.flatten(generate_hours_pupils_week_recursive(year, topics_pr_pupil, pupils, month_from, month_to, month_from, [], 1, calendar))
   end
 
-  def generate_absences_recursive([], acc, _chances_for_full_day, _chances_for_invalid, _chances_for_valid, _chanses_for_partly_hour, _chanses_full_hours, _class_id, _school_id, _full_day_dates, _trouble_factor, _number_of_trouble_pupils) do
+  def generate_absences_recursive([], acc, _chances_for_full_day, _chances_for_valid, _chanses_for_partly_hour, _chanses_full_hours, _class_id, _school_id, _full_day_dates, _trouble_factor, _number_of_trouble_pupils) do
     acc
   end
 
-  def generate_absences_recursive([aTemp | appearencesTemp], acc, chances_for_full_day, chances_for_invalid, chances_for_valid, chanses_for_partly_hour, chanses_for_full_hours, class_id, school_id, full_day_dates, trouble_factor, number_of_trouble_pupils) do
+  def generate_absences_recursive([aTemp | appearencesTemp], acc, chances_for_full_day, chances_for_valid, chanses_for_partly_hour, chanses_for_full_hours, class_id, school_id, full_day_dates, trouble_factor, number_of_trouble_pupils) do
     # get pupil number
     pupil_number = String.to_integer(String.slice(aTemp.pupil, 6, 10))
     trouble_times = if pupil_number <= number_of_trouble_pupils do trouble_factor else 1 end
 
-    absence_valid = if :rand.uniform(100)*trouble_times <= chances_for_valid do True else False end
-    absence_full_day = if :rand.uniform(100)*trouble_times <= chances_for_full_day do True else False end
+    absence_valid = if :rand.uniform(100) <= chances_for_valid * trouble_times do True else False end
+    absence_full_day = if :rand.uniform(100) <= chances_for_full_day * trouble_times do True else False end
     absence_full_hours = if absence_full_day == True do False else
         if :rand.uniform(100) <= chanses_for_full_hours do True else False end
       end
@@ -154,30 +154,30 @@ end
       new_absence_valid = Map.get(full_day_dates, aTemp.date) || absence_valid
       new_full_days = Map.put(full_day_dates, Integer.to_string(pupil_number) <> "_" <> Date.to_string(DateTime.to_date(aTemp.date)) , new_absence_valid)
       appearence = %Appearence{pupil: aTemp.pupil, topic: aTemp.topic, date: aTemp.date, time_total: 45, absence_valid: time_absence_valid, absence_invalid: time_absence_invalid, full_day: True, class_id: class_id, school_id: school_id}
-      generate_absences_recursive(appearencesTemp, [appearence | acc], chances_for_full_day, chances_for_invalid, chances_for_valid, chanses_for_partly_hour, chanses_for_full_hours, class_id, school_id, new_full_days, trouble_factor, number_of_trouble_pupils)
+      generate_absences_recursive(appearencesTemp, [appearence | acc], chances_for_full_day, chances_for_valid, chanses_for_partly_hour, chanses_for_full_hours, class_id, school_id, new_full_days, trouble_factor, number_of_trouble_pupils)
     else
       if absence_full_hours == True do
         time_absence_valid = if absence_valid == True do 0 else 45 end
         time_absence_invalid = 45 - time_absence_valid
         appearence = %Appearence{pupil: aTemp.pupil, topic: aTemp.topic, date: aTemp.date, time_total: 45, absence_valid: time_absence_valid, absence_invalid: time_absence_invalid, full_day: False, class_id: class_id, school_id: school_id}
-        generate_absences_recursive(appearencesTemp, [appearence | acc], chances_for_full_day, chances_for_invalid, chances_for_valid, chanses_for_partly_hour, chanses_for_full_hours, class_id, school_id, full_day_dates, trouble_factor, number_of_trouble_pupils)
+        generate_absences_recursive(appearencesTemp, [appearence | acc], chances_for_full_day, chances_for_valid, chanses_for_partly_hour, chanses_for_full_hours, class_id, school_id, full_day_dates, trouble_factor, number_of_trouble_pupils)
       else if absence_partly_hours == True do
           random_time = :rand.uniform(45)
           time_absence_valid = if absence_valid == True, do: 0, else: random_time
           time_absence_invalid = unless absence_valid == True, do: 45, else: random_time
           appearence = %Appearence{pupil: aTemp.pupil, topic: aTemp.topic, date: aTemp.date, time_total: 45, absence_valid: time_absence_valid, absence_invalid: time_absence_invalid, full_day: False, class_id: class_id, school_id: school_id}
-          generate_absences_recursive(appearencesTemp, [appearence | acc], chances_for_full_day, chances_for_invalid, chances_for_valid, chanses_for_partly_hour, chanses_for_full_hours, class_id, school_id, full_day_dates, trouble_factor, number_of_trouble_pupils)
+          generate_absences_recursive(appearencesTemp, [appearence | acc], chances_for_full_day, chances_for_valid, chanses_for_partly_hour, chanses_for_full_hours, class_id, school_id, full_day_dates, trouble_factor, number_of_trouble_pupils)
         else
           # no absence
           appearence = %Appearence{pupil: aTemp.pupil, topic: aTemp.topic, date: aTemp.date, time_total: 45, absence_valid: 0, absence_invalid: 0, full_day: False, class_id: class_id, school_id: school_id}
-          generate_absences_recursive(appearencesTemp, [appearence | acc], chances_for_full_day, chances_for_invalid, chances_for_valid, chanses_for_partly_hour, chanses_for_full_hours, class_id, school_id, full_day_dates, trouble_factor, number_of_trouble_pupils)
+          generate_absences_recursive(appearencesTemp, [appearence | acc], chances_for_full_day, chances_for_valid, chanses_for_partly_hour, chanses_for_full_hours, class_id, school_id, full_day_dates, trouble_factor, number_of_trouble_pupils)
         end
       end
     end
   end
 
-  def generate_absences(appearencesTemp, chances_for_full_day, chances_for_invalid, chances_for_valid, chanses_for_partly_hour, chanses_for_full_hours, class_id, school_id, trouble_factor, number_of_trouble_pupils) do
-    generate_absences_recursive(appearencesTemp, [], chances_for_full_day, chances_for_invalid, chances_for_valid, chanses_for_partly_hour, chanses_for_full_hours, class_id, school_id, %{}, trouble_factor, number_of_trouble_pupils)
+  def generate_absences(appearencesTemp, chances_for_full_day, chances_for_valid, chanses_for_partly_hour, chanses_for_full_hours, class_id, school_id, trouble_factor, number_of_trouble_pupils) do
+    generate_absences_recursive(appearencesTemp, [], chances_for_full_day, chances_for_valid, chanses_for_partly_hour, chanses_for_full_hours, class_id, school_id, %{}, trouble_factor, number_of_trouble_pupils)
   end
 
   def test_generate_hours_pupil_week do
@@ -186,7 +186,7 @@ end
     topics_pr_pupil = pick_topics_for_pupils(pupils, topics, 20)
     calendar = create_calendar(topics, 10)
     appearences_temp = generate_hours_pupils_week(2024, topics_pr_pupil, pupils, 1, 2, calendar)
-    generate_absences(appearences_temp, 10, 10, 10, 10, 10, 1, 1, 2, 2)
+    generate_absences(appearences_temp, 10, 10, 10, 10, 1, 1, 2, 2)
   end
 
   def verify_generated_test_data do
@@ -195,8 +195,11 @@ end
     topics_pr_pupil = pick_topics_for_pupils(pupils, topics, 20)
     calendar = create_calendar(topics, 10)
     appearences_temp = generate_hours_pupils_week(2024, topics_pr_pupil, pupils, 1, 2, calendar)
-    chanses_party_hour = 30
-    appearences = generate_absences(appearences_temp, 10, 10, 10, chanses_party_hour, 10, 1, 1, 2, 2)
+    chanses_party_hour = 5
+    chanses_hole_hours = 1.5
+    chanses_hole_days = 1.5
+    trouble_factor = 10
+    appearences = generate_absences(appearences_temp, chanses_hole_days, 10, chanses_party_hour, chanses_hole_hours, 1, 1, trouble_factor, 2)
 
     # find total absence percentage by adding all absence_valid and absence_invalid and divide by total number of hours
     total_absence = Enum.reduce(appearences, 0, fn aTemp, acc -> acc + aTemp.absence_valid + aTemp.absence_invalid end)
@@ -218,6 +221,12 @@ end
     number_of_pupils_with_absence = Enum.count(pupils_with_absence)
     IO.puts("Number of entries with partial absence: #{number_of_pupils_with_absence}")
 
+    # check that pupil_1 has higher absence than average
+    pupil_1 = Enum.filter(appearences, fn aTemp -> aTemp.pupil == "pupil_1" end)
+    total_absence_pupil_1 = Enum.reduce(pupil_1, 0, fn aTemp, acc -> acc + aTemp.absence_valid + aTemp.absence_invalid end)
+    total_hours_pupil_1 = Enum.reduce(pupil_1, 0, fn aTemp, acc -> acc + aTemp.time_total end)
+    percentage_pupil_1 = (total_absence_pupil_1 / total_hours_pupil_1) * 100
+    IO.puts("Total absence percentage for pupil_1: #{percentage_pupil_1}")
 
   end
 
