@@ -142,12 +142,12 @@ end
     trouble_times = if pupil_number <= number_of_trouble_pupils do trouble_factor else 1 end
 
     absence_valid = if :rand.uniform(100) <= chances_for_valid * trouble_times do True else False end
-    absence_full_day = if :rand.uniform(100) <= chances_for_full_day * trouble_times do True else False end
+    absence_full_day = if :rand.uniform(200) <= chances_for_full_day * trouble_times do True else False end
     absence_full_hours = if absence_full_day == True do False else
-        if :rand.uniform(100) <= chanses_for_full_hours do True else False end
+        if :rand.uniform(200) <= chanses_for_full_hours do True else False end
       end
     absence_partly_hours = if (absence_full_day == False and absence_full_hours == False) do
-      if :rand.uniform(100) <= chanses_for_partly_hour do True else False end end
+      if :rand.uniform(200) <= chanses_for_partly_hour do True else False end end
     if absence_full_day == True or Map.get(full_day_dates, Integer.to_string(pupil_number) <> "_" <> Date.to_string(DateTime.to_date(aTemp.date))) do
       time_absence_valid = if absence_valid == True, do: 0, else: 45
       time_absence_invalid = 45 - time_absence_valid
@@ -195,10 +195,10 @@ end
     topics_pr_pupil = pick_topics_for_pupils(pupils, topics, 20)
     calendar = create_calendar(topics, 10)
     appearences_temp = generate_hours_pupils_week(2024, topics_pr_pupil, pupils, 1, 2, calendar)
-    chanses_party_hour = 5
-    chanses_hole_hours = 1.5
-    chanses_hole_days = 1.5
-    trouble_factor = 10
+    chanses_party_hour = 3
+    chanses_hole_hours = 1
+    chanses_hole_days = 1
+    trouble_factor = 15
     appearences = generate_absences(appearences_temp, chanses_hole_days, 10, chanses_party_hour, chanses_hole_hours, 1, 1, trouble_factor, 2)
 
     # find total absence percentage by adding all absence_valid and absence_invalid and divide by total number of hours
