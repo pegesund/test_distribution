@@ -228,6 +228,16 @@ end
     percentage_pupil_1 = (total_absence_pupil_1 / total_hours_pupil_1) * 100
     IO.puts("Total absence percentage for pupil_1: #{percentage_pupil_1}")
 
+    # check average number of appearences per pupil
+    average_appearences = Enum.count(appearences) / Enum.count(pupils)
+    IO.puts("Average number of appearences per pupil: #{average_appearences}")
+
+    # check that counting appearences_temps is the same as counting appearences
+    number_of_appearences = Enum.count(appearences)
+    number_of_appearences_temp = Enum.count(appearences_temp)
+    IO.puts("Number of appearences: #{number_of_appearences} and number of appearences_temp: #{number_of_appearences_temp}")
+
+
   end
 
 end
